@@ -1,19 +1,7 @@
 #include "KVickServer.hpp"
 #include <sstream>
 
-#ifdef _WIN32
-    static void winsock_init() {
-        WSADATA wsa;
-        if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-            throw std::runtime_error("WSAStartup failed");
-    }
-#endif
-
 void KVickServer::start() {
-#ifdef _WIN32
-    winsock_init();
-#endif
-
     socket_t srv = ::socket(AF_INET, SOCK_STREAM, 0);
     if (srv == (socket_t)-1)
         throw std::runtime_error("socket() failed");
@@ -31,7 +19,6 @@ void KVickServer::start() {
 
     std::cout << "KVickServer listening on port " << port_ << '\n';
 
-    // event loop
     for (;;) {
 #ifdef USE_WS_POLL
         WSAPOLLFD pfd{ srv, POLLRDNORM, 0 };
@@ -42,11 +29,7 @@ void KVickServer::start() {
 #endif
         if (n > 0) {
             sockaddr_in cli;
-#ifdef _WIN32
-            int len = sizeof(cli);
-#else
             socklen_t len = sizeof(cli);
-#endif
             socket_t cliSock = ::accept(srv, reinterpret_cast<sockaddr*>(&cli), &len);
             if (cliSock == (socket_t)-1)  continue;
 
@@ -57,11 +40,7 @@ void KVickServer::start() {
 
 void KVickServer::handleClient(socket_t sock) {
     char buf[1024]{};
-#ifdef _WIN32
-    int r = ::recv(sock, buf, sizeof(buf)-1, 0);
-#else
     int r = ::read(sock, buf, sizeof(buf)-1);
-#endif
     if (r <= 0) { socket_close(sock); return; }
 
     std::string cmd(buf);
@@ -104,29 +83,17 @@ void KVickServer::handleClient(socket_t sock) {
             }, v);
 
             std::string out = oss.str();
-#ifdef _WIN32
-            ::send(sock, out.c_str(), (int)out.size(), 0);
-#else
             ::write(sock, out.c_str(), out.size());
-#endif
         } catch (const std::exception& e) {
             std::string err = "ERR " + std::string(e.what());
-#ifdef _WIN32
-            ::send(sock, err.c_str(), (int)err.size(), 0);
-#else
             ::write(sock, err.c_str(), err.size());
-#endif
         }
     } else if (op == "SET") {
         std::getline(iss, val);
         if (!val.empty() && val.front() == ' ') val.erase(0,1);
         set(key, val);
         const char ok[] = "OK";
-#ifdef _WIN32
-        ::send(sock, ok, sizeof(ok)-1, 0);
-#else
         ::write(sock, ok, sizeof(ok)-1);
-#endif
     }
     socket_close(sock);
 }
