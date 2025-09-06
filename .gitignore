@@ -1,0 +1,11 @@
+# Build folder
+build/
+
+# VS Code settings you don’t want to track (optional)
+.vscode/*.code-workspace
+
+# OS / Editor files
+*.swp
+*.tmp
+*.log
+Thumbs.db
