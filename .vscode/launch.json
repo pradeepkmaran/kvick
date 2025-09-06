@@ -5,7 +5,7 @@
       "name": "Run kvick.exe",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/kvick.exe",
+      "program": "${workspaceFolder}/build/src/kvick.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
