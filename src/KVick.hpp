@@ -1,4 +1,3 @@
-// KVick.hpp
 #ifndef KVICK_HPP
 #define KVICK_HPP
 
@@ -69,4 +68,4 @@ private:
     void printValue(const ValueType& value) const;
 };
 
-#endif // KVICK_HPP
+#endif

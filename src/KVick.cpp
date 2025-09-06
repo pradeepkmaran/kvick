@@ -1,4 +1,3 @@
-// KVick.cpp
 #include "KVick.hpp"
 
 KVick::ValueType KVick::get(const std::string& key) const {
