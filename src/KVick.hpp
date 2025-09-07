@@ -49,8 +49,7 @@ public:
         try {
             return std::get<T>(it->second);
         } catch (const std::bad_variant_access& e) {
-            throw std::runtime_error("Type mismatch for key: " + key + 
-                                   ". Expected different type than stored.");
+            throw std::runtime_error("Type mismatch for key: " + key + ". Expected different type than stored.");
         }
     }
     

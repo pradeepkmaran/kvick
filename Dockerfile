@@ -15,4 +15,7 @@ COPY . /app
 
 RUN mkdir build && cd build && cmake .. && make
 
-CMD ["./build/src/kvick"]
+# default port
+ENV PORT=8080
+
+CMD ["sh", "-c", "./build/src/kvick $PORT"]

@@ -24,8 +24,8 @@ public:
     void start();
 
 private:
-    int     port_;
-    void    handleClient(socket_t client);
+    int port_;
+    void handleClient(socket_t client);
 };
 
 #endif
