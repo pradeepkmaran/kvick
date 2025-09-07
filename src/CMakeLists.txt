@@ -8,8 +8,3 @@ add_executable(kvick
 
 find_package(Threads REQUIRED)
 target_link_libraries(kvick PRIVATE Threads::Threads)
-
-if (WIN32)
-    target_compile_definitions(kvick PRIVATE _WIN32_WINNT=0x0601)
-    target_link_libraries(kvick PRIVATE ws2_32)
-endif()

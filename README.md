@@ -1,7 +1,7 @@
 
-# kvick-app
+# kvick-db
 
-A simple application built with CMake and Docker.
+A simple Key value store built with CMake and Docker.
 
 ## Requirements
 
@@ -11,17 +11,17 @@ A simple application built with CMake and Docker.
 ## Build
 
 ```bash
-docker build -t kvick-app .
+docker build -t kvick-db .
 ```
 
 ## Run
 
 ```bash
-docker run -it --rm -p 8080:8080 kvick-app
+docker run -it --rm -p 8080:8080 kvick-db
 ```
 
-Access the app at [http://localhost:8080](http://localhost:8080).
+Access the DB at [http://localhost:8080](http://localhost:8080).
 
 ## Test
 
-Test the app using the test-client.py
+Test the DB using the test-client.py
