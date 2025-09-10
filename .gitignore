@@ -9,3 +9,6 @@ build/
 *.tmp
 *.log
 Thumbs.db
+
+# Misc
+TODO.txt

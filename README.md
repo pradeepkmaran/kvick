@@ -20,11 +20,11 @@ You can run multiple instances of the service on different ports.
 For example, to run two instances on ports 8080 and 8081:
 
 ```bash
-docker run -it --rm -p 8080:8080 -e PORT=8080 kvick-db
+ docker run -it --rm -p 8080:8080 -e PORT=8080 -v "$(pwd)/data":/app/data kvick-db 
 ```
 
 ```bash
-docker run -it --rm -p 8081:8081 -e PORT=8081 kvick-db
+ docker run -it --rm -p 8081:8081 -e PORT=8080 -v "$(pwd)/data":/app/data kvick-db 
 ```
 
 Each instance will be accessible at:
