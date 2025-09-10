@@ -1,6 +1,12 @@
 #include "KVick.hpp"
+#include <fstream>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <atomic>
 
 KVick::ValueType KVick::get(const std::string& key) const {
+    std::lock_guard<std::mutex> lock(store_mutex);
     auto it = store.find(key);
     if (it != store.end()) {
         return it->second;
@@ -106,4 +112,107 @@ void KVick::printValue(const ValueType& value) const {
             std::cout << "]";
         }
     }, value);
+}
+
+
+bool KVick::saveToFile(const std::string& filename) const {
+    std::lock_guard<std::mutex> lock(store_mutex);
+    
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file for writing: " << filename << std::endl;
+        return false;
+    }
+    
+    file << "{\n";
+    bool first = true;
+    for (const auto& [key, value] : store) {
+        if (!first) file << ",\n";
+        first = false;
+        
+        file << "  \"" << key << "\": ";
+        
+        std::visit([&file](const auto& v) {
+            file << JSONSerializer::serialize(v);
+        }, value);
+    }
+    file << "\n}\n";
+    
+    file.close();
+    std::cout << "Data saved to " << filename << " (" << store.size() << " entries)" << std::endl;
+    return true;
+}
+
+bool KVick::loadFromFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "No existing data file found: " << filename << std::endl;
+        return false; 
+    }
+    
+    std::lock_guard<std::mutex> lock(store_mutex);
+    
+    std::string line;
+    size_t loaded_count = 0;
+    
+    while (std::getline(file, line)) {
+        if (line.find("\"") == std::string::npos) continue;
+        
+        size_t colon_pos = line.find("\":");
+        if (colon_pos == std::string::npos) continue;
+        
+        size_t key_start = line.find("\"") + 1;
+        size_t key_end = line.find("\"", key_start);
+        if (key_end == std::string::npos) continue;
+        
+        std::string key = line.substr(key_start, key_end - key_start);
+        
+        size_t value_start = colon_pos + 2;
+        while (value_start < line.length() && line[value_start] == ' ') value_start++;
+        
+        std::string value_str = line.substr(value_start);
+        while (!value_str.empty() && (value_str.back() == ',' || value_str.back() == ' ')) {
+            value_str.pop_back();
+        }
+        
+        if (value_str.front() == '"' && value_str.back() == '"') {
+            std::string str_val = value_str.substr(1, value_str.length() - 2);
+            store[key] = str_val;
+            loaded_count++;
+        } else if (value_str == "true" || value_str == "false") {
+            store[key] = (value_str == "true");
+            loaded_count++;
+        } else if (value_str.find('.') != std::string::npos) {
+            store[key] = std::stod(value_str);
+            loaded_count++;
+        } else if (std::isdigit(value_str.front()) || value_str.front() == '-') {
+            store[key] = std::stoi(value_str);
+            loaded_count++;
+        }
+    }
+    
+    file.close();
+    std::cout << "Data loaded from " << filename << " (" << loaded_count << " entries)" << std::endl;
+    return true;
+}
+
+void KVick::enableAutoPersist(const std::string& filename, int intervalSeconds) {
+    persist_filename = filename;
+    auto_persist_enabled = true;
+    
+    persist_thread = std::thread([this, intervalSeconds]() {
+        while (auto_persist_enabled) {
+            std::this_thread::sleep_for(std::chrono::seconds(intervalSeconds));
+            if (auto_persist_enabled) {
+                saveToFile(persist_filename);
+            }
+        }
+    });
+}
+
+void KVick::disableAutoPersist() {
+    auto_persist_enabled = false;
+    if (persist_thread.joinable()) {
+        persist_thread.join();
+    }
 }

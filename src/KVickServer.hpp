@@ -14,14 +14,15 @@
 #include <poll.h>
 using socket_t = int;
 inline void socket_close(socket_t s) { ::close(s); }
-inline int socket_errno()           { return errno; }
+inline int socket_errno() { return errno; }
 constexpr int POLL_READ  = POLLIN;
 constexpr int POLL_ERROR = POLLERR;
 
 class KVickServer : public KVick {
 public:
-    explicit KVickServer(int port = 8080) : port_(port) {}
+    KVickServer(int port);
     void start();
+    ~KVickServer();
 
 private:
     int port_;

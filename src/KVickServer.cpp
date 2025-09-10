@@ -1,6 +1,18 @@
 #include "KVickServer.hpp"
 #include <sstream>
 
+
+KVickServer::KVickServer(int port = 8080) : port_(port) {
+    loadFromFile("/app/data/kvick_data.json");
+    enableAutoPersist("/app/data/kvick_data.json", 30);
+}
+
+KVickServer::~KVickServer() {
+    disableAutoPersist();
+    saveToFile("/app/data/kvick_data.json");
+    std::cout << "Data persisted on shutdown" << std::endl;
+}
+
 void KVickServer::start() {
     socket_t srv = ::socket(AF_INET, SOCK_STREAM, 0);
     if (srv == (socket_t)-1)
@@ -97,3 +109,4 @@ void KVickServer::handleClient(socket_t sock) {
     }
     socket_close(sock);
 }
+
